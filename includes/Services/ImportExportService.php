@@ -1,0 +1,432 @@
+<?php
+/**
+ * Import and Export Service.
+ *
+ * Handles exporting and importing plugin settings and Schema.org records
+ * with comprehensive validation, preview generation, and overwrite protection.
+ *
+ * @package DPLS\SchemaAI\Services
+ * @author  Dev Pattern Labs
+ * @license GPL-2.0-or-later
+ */
+
+namespace DPLS\SchemaAI\Services;
+
+use DPLS\SchemaAI\Common\Constants;
+use DPLS\SchemaAI\Common\Utils;
+use DPLS\SchemaAI\Generator\SchemaRegistry;
+
+// Prevent direct access.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Manages configuration and schema record portability.
+ */
+class ImportExportService {
+
+	/**
+	 * Settings Service.
+	 *
+	 * @var SettingsService
+	 */
+	protected SettingsService $settings;
+
+	/**
+	 * Validator Service.
+	 *
+	 * @var ValidatorService
+	 */
+	protected ValidatorService $validator;
+
+	/**
+	 * History Service.
+	 *
+	 * @var HistoryService
+	 */
+	protected HistoryService $history;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param SettingsService  $settings Settings service instance.
+	 * @param ValidatorService $validator Validator service instance.
+	 * @param HistoryService   $history History service instance.
+	 */
+	public function __construct( SettingsService $settings, ValidatorService $validator, HistoryService $history ) {
+		$this->settings  = $settings;
+		$this->validator = $validator;
+		$this->history   = $history;
+	}
+
+	/**
+	 * Export plugin settings to a structured associative array.
+	 *
+	 * @return array
+	 */
+	public function export_settings(): array {
+		$settings = $this->settings->get_all();
+
+		return array(
+			'format'      => 'dpls-schema-ai-export',
+			'type'        => 'settings',
+			'version'     => Constants::VERSION,
+			'exported_at' => gmdate( 'Y-m-d H:i:s' ),
+			'site_url'    => function_exists( 'home_url' ) ? home_url() : '',
+			'payload'     => $settings,
+		);
+	}
+
+	/**
+	 * Export schema records for managed posts.
+	 *
+	 * @param array|null $post_ids Specific post IDs or null for all managed posts.
+	 * @return array
+	 */
+	public function export_schemas( ?array $post_ids = null ): array {
+		$records = array();
+
+		if ( empty( $post_ids ) ) {
+			// Query all posts that have an active or managed schema.
+			$enabled_types = $this->settings->get( 'enabled_post_types', array( 'post', 'page' ) );
+			$query_args    = array(
+				'post_type'      => $enabled_types,
+				'post_status'    => 'publish',
+				'posts_per_page' => 500,
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Filter by schema status meta required for export.
+				'meta_query'     => array(
+					array(
+						'key'     => Constants::META_SCHEMA_STATUS,
+						'value'   => array( Constants::STATUS_APPLIED, Constants::STATUS_WARNINGS, Constants::STATUS_NEEDS_UPDATE ),
+						'compare' => 'IN',
+					),
+				),
+				'fields'         => 'ids',
+			);
+
+			$query = new \WP_Query( $query_args );
+			$post_ids = $query->posts;
+		}
+
+		foreach ( $post_ids as $pid ) {
+			$pid  = (int) $pid;
+			$post = get_post( $pid );
+			if ( ! $post instanceof \WP_Post ) {
+				continue;
+			}
+
+			$active_schema = get_post_meta( $pid, Constants::META_ACTIVE_SCHEMA, true );
+			if ( empty( $active_schema ) ) {
+				continue;
+			}
+
+			$records[] = array(
+				'post_id'           => $pid,
+				'post_title'        => $post->post_title,
+				'post_name'         => $post->post_name,
+				'post_type'         => $post->post_type,
+				'suggested_schema'  => get_post_meta( $pid, Constants::META_SUGGESTED_SCHEMA, true ),
+				'schema_status'     => get_post_meta( $pid, Constants::META_SCHEMA_STATUS, true ),
+				'schema_version'    => (int) get_post_meta( $pid, Constants::META_SCHEMA_VERSION, true ),
+				'active_schema'     => is_string( $active_schema ) ? json_decode( $active_schema, true ) : $active_schema,
+				'locked_properties' => get_post_meta( $pid, Constants::META_LOCKED_PROPERTIES, true ) ?: array(),
+			);
+		}
+
+		return array(
+			'format'      => 'dpls-schema-ai-export',
+			'type'        => 'schemas',
+			'version'     => Constants::VERSION,
+			'exported_at' => gmdate( 'Y-m-d H:i:s' ),
+			'site_url'    => function_exists( 'home_url' ) ? home_url() : '',
+			'count'       => count( $records ),
+			'payload'     => $records,
+		);
+	}
+
+	/**
+	 * Validate import data and generate an actionable preview.
+	 *
+	 * Inspects payload structure, verifies Schema.org conformance,
+	 * checks for existing posts, and flags potential conflicts.
+	 *
+	 * @param array $data Raw decoded JSON import data.
+	 * @return array Validation and preview report.
+	 */
+	public function validate_import( array $data ): array {
+		if ( empty( $data ) || ! is_array( $data ) ) {
+			return array(
+				'is_valid' => false,
+				'errors'   => array( __( 'The uploaded file is empty or is not valid JSON.', 'dpls-schema-ai' ) ),
+				'preview'  => array(),
+			);
+		}
+
+		// Verify header / format signature.
+		if ( ( $data['format'] ?? '' ) !== 'dpls-schema-ai-export' ) {
+			return array(
+				'is_valid' => false,
+				'errors'   => array( __( 'Unrecognized format. File was not generated by DPLS Schema AI or is corrupted.', 'dpls-schema-ai' ) ),
+				'preview'  => array(),
+			);
+		}
+
+		$type = $data['type'] ?? '';
+		if ( ! in_array( $type, array( 'settings', 'schemas' ), true ) ) {
+			return array(
+				'is_valid' => false,
+				'errors'   => array( __( 'Unsupported export payload type.', 'dpls-schema-ai' ) ),
+				'preview'  => array(),
+			);
+		}
+
+		$payload = $data['payload'] ?? null;
+		if ( ! is_array( $payload ) || empty( $payload ) ) {
+			return array(
+				'is_valid' => false,
+				'errors'   => array( __( 'The export file contains no payload data.', 'dpls-schema-ai' ) ),
+				'preview'  => array(),
+			);
+		}
+
+		// Validate Settings Import.
+		if ( 'settings' === $type ) {
+			return array(
+				'is_valid' => true,
+				'type'     => 'settings',
+				'errors'   => array(),
+				'preview'  => array(
+					'type'               => 'settings',
+					'exported_at'        => $data['exported_at'] ?? '',
+					'origin_site'        => $data['site_url'] ?? '',
+					'organization_name'  => $payload['organization']['name'] ?? '',
+					'enabled_post_types' => $payload['enabled_post_types'] ?? array(),
+					'automation_policy'  => $payload['automation_policy'] ?? '',
+				),
+			);
+		}
+
+		// Validate Schema Records Import.
+		$valid_items   = array();
+		$invalid_items = array();
+		$conflicts     = array();
+
+		foreach ( $payload as $idx => $item ) {
+			if ( ! is_array( $item ) || empty( $item['active_schema'] ) ) {
+				/* translators: %d: Record index number */
+				$invalid_items[] = sprintf( __( 'Record #%d: Missing active schema data.', 'dpls-schema-ai' ), $idx + 1 );
+				continue;
+			}
+
+			// Validate Schema.org structure.
+			$schema_data = $item['active_schema'];
+			$target_type = $item['suggested_schema'] ?? ( is_array( $schema_data ) ? ( $schema_data['@type'] ?? '' ) : '' );
+
+			if ( ! empty( $target_type ) && ! SchemaRegistry::is_supported( $target_type ) ) {
+				/* translators: 1: Record index number, 2: Schema type name */
+				$invalid_items[] = sprintf( __( 'Record #%1$d: Unsupported schema type "%2$s".', 'dpls-schema-ai' ), $idx + 1, $target_type );
+				continue;
+			}
+
+			$validation = $this->validator->validate( $schema_data, $target_type ?: null );
+			if ( ! $validation['is_valid'] ) {
+				$invalid_items[] = sprintf(
+					/* translators: 1: Record index number, 2: Post title, 3: Validation error messages */
+					__( 'Record #%1$d ("%2$s"): Schema validation failed: %3$s', 'dpls-schema-ai' ),
+					$idx + 1,
+					esc_html( $item['post_title'] ?? 'Untitled' ),
+					implode( '; ', $validation['errors'] )
+				);
+				continue;
+			}
+
+			// Check matching target post in current site.
+			$matched_post_id = 0;
+			if ( ! empty( $item['post_name'] ) ) {
+				$matched = get_page_by_path( $item['post_name'], OBJECT, $item['post_type'] ?? 'post' );
+				if ( $matched instanceof \WP_Post ) {
+					$matched_post_id = $matched->ID;
+				}
+			}
+
+			if ( ! $matched_post_id && ! empty( $item['post_id'] ) ) {
+				$by_id = get_post( (int) $item['post_id'] );
+				if ( $by_id instanceof \WP_Post ) {
+					$matched_post_id = $by_id->ID;
+				}
+			}
+
+			$has_existing = false;
+			if ( $matched_post_id ) {
+				$existing_schema = get_post_meta( $matched_post_id, Constants::META_ACTIVE_SCHEMA, true );
+				if ( ! empty( $existing_schema ) ) {
+					$has_existing = true;
+					$conflicts[]  = array(
+						'post_id'    => $matched_post_id,
+						'post_title' => $item['post_title'] ?? '',
+					);
+				}
+			}
+
+			$valid_items[] = array(
+				'matched_id'        => $matched_post_id,
+				'post_title'        => $item['post_title'] ?? '',
+				'schema_type'       => $target_type,
+				'has_existing'      => $has_existing,
+				'schema_data'       => $schema_data,
+				'locked_properties' => $item['locked_properties'] ?? array(),
+			);
+		}
+
+		$is_valid = ! empty( $valid_items ) || empty( $invalid_items );
+
+		return array(
+			'is_valid' => $is_valid,
+			'type'     => 'schemas',
+			'errors'   => $invalid_items,
+			'preview'  => array(
+				'type'            => 'schemas',
+				'total_in_file'   => count( $payload ),
+				'valid_count'     => count( $valid_items ),
+				'invalid_count'   => count( $invalid_items ),
+				'conflict_count'  => count( $conflicts ),
+				'conflicts'       => $conflicts,
+				'items'           => $valid_items,
+			),
+		);
+	}
+
+	/**
+	 * Execute settings import.
+	 *
+	 * Requires explicit confirmation before overwriting configuration.
+	 *
+	 * @param array $data Validated export package.
+	 * @param bool  $confirmed Explicit user confirmation.
+	 * @return array Result report.
+	 */
+	public function import_settings( array $data, bool $confirmed = false ): array {
+		if ( ! $confirmed ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Import confirmation required before applying settings.', 'dpls-schema-ai' ),
+			);
+		}
+
+		$validation = $this->validate_import( $data );
+		if ( ! $validation['is_valid'] || 'settings' !== ( $validation['type'] ?? '' ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Invalid settings export file.', 'dpls-schema-ai' ),
+				'errors'  => $validation['errors'],
+			);
+		}
+
+		$new_settings = $data['payload'];
+		$updated      = $this->settings->update( $new_settings );
+
+		if ( $updated ) {
+			$this->history->log_event(
+				'settings_imported',
+				0,
+				__( 'Plugin settings imported successfully from JSON backup.', 'dpls-schema-ai' )
+			);
+
+			return array(
+				'success' => true,
+				'message' => __( 'Settings imported successfully.', 'dpls-schema-ai' ),
+			);
+		}
+
+		return array(
+			'success' => false,
+			'message' => __( 'Failed to save imported settings.', 'dpls-schema-ai' ),
+		);
+	}
+
+	/**
+	 * Execute schema records import.
+	 *
+	 * Will not overwrite existing schema records unless $overwrite is explicitly true.
+	 *
+	 * @param array $data Validated export package.
+	 * @param bool  $confirmed Explicit user confirmation.
+	 * @param bool  $overwrite Whether to overwrite existing approved schemas.
+	 * @return array Result report.
+	 */
+	public function import_schemas( array $data, bool $confirmed = false, bool $overwrite = false ): array {
+		if ( ! $confirmed ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Import confirmation required before writing schema records.', 'dpls-schema-ai' ),
+			);
+		}
+
+		$validation = $this->validate_import( $data );
+		if ( ! $validation['is_valid'] || 'schemas' !== ( $validation['type'] ?? '' ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Invalid schema export file.', 'dpls-schema-ai' ),
+				'errors'  => $validation['errors'],
+			);
+		}
+
+		$items    = $validation['preview']['items'] ?? array();
+		$imported = 0;
+		$skipped  = 0;
+
+		foreach ( $items as $item ) {
+			$post_id = $item['matched_id'];
+			if ( ! $post_id ) {
+				$skipped++;
+				continue;
+			}
+
+			if ( $item['has_existing'] && ! $overwrite ) {
+				$skipped++;
+				continue;
+			}
+
+			$json_string = Utils::encode_schema( $item['schema_data'] );
+
+			update_post_meta( $post_id, Constants::META_ACTIVE_SCHEMA, $json_string );
+			update_post_meta( $post_id, Constants::META_SUGGESTED_SCHEMA, $item['schema_type'] );
+			update_post_meta( $post_id, Constants::META_SCHEMA_STATUS, Constants::STATUS_APPLIED );
+			update_post_meta( $post_id, Constants::META_APPLIED_TIME, time() );
+
+			if ( ! empty( $item['locked_properties'] ) ) {
+				update_post_meta( $post_id, Constants::META_LOCKED_PROPERTIES, $item['locked_properties'] );
+			}
+
+			$current_version = (int) get_post_meta( $post_id, Constants::META_SCHEMA_VERSION, true );
+			update_post_meta( $post_id, Constants::META_SCHEMA_VERSION, max( 1, $current_version + 1 ) );
+
+			$imported++;
+		}
+
+		$this->history->log_event(
+			'schemas_imported',
+			0,
+			sprintf(
+				/* translators: 1: Number imported, 2: Number skipped */
+				__( 'Imported %1$d schema records (%2$d skipped).', 'dpls-schema-ai' ),
+				$imported,
+				$skipped
+			),
+			array( 'imported' => $imported, 'skipped' => $skipped )
+		);
+
+		return array(
+			'success'  => true,
+			'imported' => $imported,
+			'skipped'  => $skipped,
+			'message'  => sprintf(
+				/* translators: 1: Number imported, 2: Number skipped */
+				__( 'Import completed: %1$d schema records applied, %2$d skipped.', 'dpls-schema-ai' ),
+				$imported,
+				$skipped
+			),
+		);
+	}
+}

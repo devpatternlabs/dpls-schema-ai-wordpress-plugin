@@ -1,0 +1,127 @@
+# Copyright (C) 2026 Dev Pattern Labs
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: DPLS Schema AI 1.0.0\n"
+"Report-Msgid-Bugs-To: https://devpatternlabs.com/support\n"
+"POT-Creation-Date: 2026-10-21T15:30:00+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2026-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Dev Pattern Labs <support@devpatternlabs.com>\n"
+"Language-Team: English <support@devpatternlabs.com>\n"
+"X-Generator: Dev Pattern Labs Translation Tool 1.0\n"
+"X-Domain: dpls-schema-ai\n"
+
+#: dpls-schema-ai.php:5
+msgid "Automatically analyzes WordPress page and post content, recommends structured data, generates Schema.org JSON-LD, and maintains it when content changes."
+msgstr ""
+
+#: includes/Common/Constants.php:23
+msgid "DPLS Schema AI"
+msgstr ""
+
+#: includes/Admin/AdminMenu.php:31
+msgid "DPL Schema AI"
+msgstr ""
+
+#: includes/Admin/AdminMenu.php:32
+msgid "Overview"
+msgstr ""
+
+#: includes/Admin/AdminMenu.php:33
+msgid "Pages & Posts"
+msgstr ""
+
+#: includes/Admin/AdminMenu.php:34
+msgid "Schema Generator"
+msgstr ""
+
+#: includes/Admin/AdminMenu.php:35
+msgid "Validation"
+msgstr ""
+
+#: includes/Admin/AdminMenu.php:36
+msgid "Automation"
+msgstr ""
+
+#: includes/Admin/AdminMenu.php:37
+msgid "History"
+msgstr ""
+
+#: includes/Admin/AdminMenu.php:38
+msgid "Integrations"
+msgstr ""
+
+#: includes/Admin/AdminMenu.php:39
+msgid "Settings"
+msgstr ""
+
+#: includes/Admin/Views/settings.php:31
+msgid "DPLS Schema AI — Settings & Data Management"
+msgstr ""
+
+#: includes/Admin/Views/settings.php:44
+msgid "Verified Organization Identity"
+msgstr ""
+
+#: includes/Admin/Views/settings.php:110
+msgid "Automatic Maintenance Policies"
+msgstr ""
+
+#: includes/Admin/Views/settings.php:123
+msgid "SAFE AUTO-UPDATE (Recommended)"
+msgstr ""
+
+#: includes/Admin/Views/settings.php:128
+msgid "REVIEW REQUIRED"
+msgstr ""
+
+#: includes/Admin/Views/settings.php:133
+msgid "OFF"
+msgstr ""
+
+#: includes/Admin/Views/settings.php:161
+msgid "Enabled Post Types"
+msgstr ""
+
+#: includes/Admin/Views/settings.php:181
+msgid "Preserve user data and generated schemas on uninstall (Default)"
+msgstr ""
+
+#: includes/Admin/Views/settings.php:200
+msgid "Configuration & Schema Portability (Import / Export)"
+msgstr ""
+
+#: includes/Admin/Views/settings.php:210
+msgid "Export Settings JSON"
+msgstr ""
+
+#: includes/Admin/Views/settings.php:214
+msgid "Export Schema Records JSON"
+msgstr ""
+
+#: includes/Admin/Views/settings.php:224
+msgid "Validate & Preview Import"
+msgstr ""
+
+#: includes/Admin/Views/integrations.php:48
+msgid "WooCommerce E-Commerce Integration"
+msgstr ""
+
+#: includes/Admin/Views/integrations.php:97
+msgid "Elementor Page Builder Adapter"
+msgstr ""
+
+#: includes/Admin/Views/integrations.php:136
+msgid "Optional Local AI Model (Ollama)"
+msgstr ""
+
+#: includes/Services/PrivacyService.php:46
+msgid "Structured Data and Schema.org Information"
+msgstr ""
+
+#: includes/Services/PrivacyService.php:47
+msgid "This website utilizes DPLS Schema AI (developed by Dev Pattern Labs) to manage Schema.org structured data in JSON-LD format. Structured data assists search engine crawlers in understanding the structure, context, and entities on this website."
+msgstr ""
