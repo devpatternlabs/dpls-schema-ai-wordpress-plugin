@@ -24,7 +24,7 @@ class Constants {
 	public const PLUGIN_SLUG = 'dpls-schema-ai';
 	public const MENU_SLUG   = 'dpls-schema-ai';
 	public const TEXT_DOMAIN = 'dpls-schema-ai';
-	public const VERSION     = '2.0.0';
+	public const VERSION     = '2.1.0';
 
 	// Permissions.
 	public const REQUIRED_CAPABILITY = 'manage_options';

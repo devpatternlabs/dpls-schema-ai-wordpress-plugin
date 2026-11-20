@@ -139,7 +139,7 @@ class EditorMetaBox {
 					<?php endif; ?>
 				</div>
 
-				<div class="dpls-metabox-quick-actions" style="display:flex; gap:8px;">
+				<div class="dpls-metabox-quick-actions" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
 					<button type="button" class="button button-small dpls-action-analyze" data-post-id="<?php echo esc_attr( $post_id ); ?>">
 						<span class="dashicons dashicons-search"></span> <?php esc_html_e( 'Analyze Content', 'dpls-schema-ai' ); ?>
 					</button>
@@ -149,6 +149,16 @@ class EditorMetaBox {
 					<button type="button" class="button button-small dpls-action-validate" data-post-id="<?php echo esc_attr( $post_id ); ?>" <?php disabled( empty( $current_schema_code ) ); ?>>
 						<span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Validate', 'dpls-schema-ai' ); ?>
 					</button>
+					<?php
+					$permalink       = get_permalink( $post_id );
+					$is_published    = ( 'publish' === $post->post_status );
+					$google_test_url = ( $is_published && ! empty( $permalink ) )
+						? 'https://search.google.com/test/rich-results?url=' . rawurlencode( $permalink )
+						: 'https://search.google.com/test/rich-results';
+					?>
+					<a href="<?php echo esc_url( $google_test_url ); ?>" target="_blank" rel="noopener noreferrer" class="button button-small dpls-btn-google-test" style="border-color:#4285f4; color:#1a73e8; display:inline-flex; align-items:center; gap:4px;" title="<?php esc_attr_e( 'Test this page with official Google Rich Results Test tool', 'dpls-schema-ai' ); ?>">
+						<span class="dashicons dashicons-external" style="font-size:14px; width:14px; height:14px;"></span> <?php esc_html_e( 'Google Rich Results Test', 'dpls-schema-ai' ); ?>
+					</a>
 				</div>
 			</div>
 
@@ -194,6 +204,9 @@ class EditorMetaBox {
 				</div>
 
 				<div class="dpls-metabox-actions" style="display:flex; gap:8px;">
+					<button type="button" class="button dpls-btn-copy-jsonld" data-post-id="<?php echo esc_attr( $post_id ); ?>" title="<?php esc_attr_e( 'Copy structured data markup to clipboard', 'dpls-schema-ai' ); ?>">
+						<span class="dashicons dashicons-admin-page"></span> <?php esc_html_e( 'Copy JSON-LD', 'dpls-schema-ai' ); ?>
+					</button>
 					<button type="button" class="button dpls-action-disable" data-post-id="<?php echo esc_attr( $post_id ); ?>" <?php disabled( Constants::STATUS_DISABLED === $status || Constants::STATUS_NONE === $status ); ?>>
 						<?php esc_html_e( 'Disable Schema', 'dpls-schema-ai' ); ?>
 					</button>

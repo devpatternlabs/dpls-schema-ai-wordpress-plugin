@@ -14,9 +14,11 @@ use DPLS\SchemaAI\Admin\AdminMenu;
 use DPLS\SchemaAI\Admin\AjaxHandler;
 use DPLS\SchemaAI\Admin\ContentTable;
 use DPLS\SchemaAI\Admin\EditorMetaBox;
+use DPLS\SchemaAI\Admin\PostListActions;
 use DPLS\SchemaAI\AI\AIService;
 use DPLS\SchemaAI\Common\Constants;
 use DPLS\SchemaAI\Generator\ContentClassifier;
+use DPLS\SchemaAI\Integrations\SeoConflictDetector;
 use DPLS\SchemaAI\Integrations\WooCommerceIntegration;
 use DPLS\SchemaAI\Services\AutomationService;
 use DPLS\SchemaAI\Services\GeneratorService;
@@ -64,6 +66,8 @@ class Plugin {
 	public AdminAssets $admin_assets;
 	public AjaxHandler $ajax_handler;
 	public EditorMetaBox $editor_metabox;
+	public PostListActions $post_list_actions;
+	public SeoConflictDetector $seo_conflict;
 	public WooCommerceIntegration $woocommerce;
 	public ImportExportService $import_export;
 	public PrivacyService $privacy;
@@ -138,12 +142,19 @@ class Plugin {
 			$this->import_export,
 			$this->ai
 		);
-		$this->editor_metabox = new EditorMetaBox(
+		$this->editor_metabox    = new EditorMetaBox(
 			$this->settings,
 			$this->scanner,
 			$this->generator,
 			$this->validator
 		);
+		$this->post_list_actions = new PostListActions(
+			$this->settings,
+			$this->scanner,
+			$this->generator,
+			$this->validator
+		);
+		$this->seo_conflict      = new SeoConflictDetector( $this->settings );
 	}
 
 	/**
@@ -163,11 +174,13 @@ class Plugin {
 		$this->automation->register();
 		$this->woocommerce->register();
 		$this->privacy->register();
+		$this->seo_conflict->register();
 
 		if ( is_admin() ) {
 			$this->admin_menu->register();
 			$this->admin_assets->register();
 			$this->editor_metabox->register();
+			$this->post_list_actions->register();
 		}
 
 		if ( wp_doing_ajax() ) {

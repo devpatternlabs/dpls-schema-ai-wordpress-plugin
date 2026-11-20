@@ -78,6 +78,19 @@ if ( ! function_exists( 'plugin_dir_path' ) ) {
 	}
 }
 
+if ( ! function_exists( 'add_query_arg' ) ) {
+	function add_query_arg( $key, $value, $url = '' ) {
+		$sep = ( false !== strpos( $url, '?' ) ) ? '&' : '?';
+		return $url . $sep . rawurlencode( $key ) . '=' . rawurlencode( $value );
+	}
+}
+
+if ( ! function_exists( 'remove_query_arg' ) ) {
+	function remove_query_arg( $keys, $url = '' ) {
+		return $url;
+	}
+}
+
 if ( ! function_exists( 'plugin_dir_url' ) ) {
 	function plugin_dir_url( $file ) {
 		return 'http://example.com/wp-content/plugins/dpls-schema-ai/';
@@ -1521,6 +1534,47 @@ $sched_res = $ai_service->schedule_async_update( 101 );
 test_assert( true === $sched_res, 'M9.7: Async background update scheduled without blocking' );
 $dup_sched = $ai_service->schedule_async_update( 101 );
 test_assert( false === $dup_sched, 'M9.7: Duplicate async background update blocked' );
+
+echo PHP_EOL . "--- MODULE 10: v2.1.0 Enhancements (Google Test, Bulk Actions & SEO Conflict) ---" . PHP_EOL;
+
+// 10.1 Google Rich Results Test URL generation
+$permalink_101 = get_permalink( 101 );
+$google_url_pub = 'https://search.google.com/test/rich-results?url=' . rawurlencode( $permalink_101 );
+test_assert( str_contains( $google_url_pub, 'search.google.com/test/rich-results?url=' ), 'M10.1: Google Rich Results Test URL correctly formats permalink' );
+
+// 10.2 Post List Actions registration
+$post_list_actions = new \DPLS\SchemaAI\Admin\PostListActions( $settings, $scanner, $generator, $validator );
+$mock_bulk_actions = $post_list_actions->register_bulk_actions( array( 'trash' => 'Move to Trash' ) );
+test_assert( isset( $mock_bulk_actions['dpls_bulk_generate'] ), 'M10.2: dpls_bulk_generate registered in bulk actions dropdown' );
+test_assert( isset( $mock_bulk_actions['dpls_bulk_apply'] ), 'M10.2: dpls_bulk_apply registered in bulk actions dropdown' );
+
+// 10.3 Bulk action execution
+$redirect_after_bulk = $post_list_actions->handle_bulk_actions( 'edit.php?post_type=post', 'dpls_bulk_generate', array( 101, 102 ) );
+test_assert( str_contains( $redirect_after_bulk, 'dpls_bulk_generated=2' ), 'M10.3: Bulk schema generation processed 2 posts and added redirect arg' );
+
+// 10.4 Schema Column header and rendering
+$mock_cols = $post_list_actions->add_schema_column( array( 'cb' => '<input>', 'title' => 'Title', 'date' => 'Date' ) );
+test_assert( isset( $mock_cols['dpls_schema'] ), 'M10.4: Schema (DPLS) custom column header added' );
+
+ob_start();
+$post_list_actions->render_schema_column( 'dpls_schema', 101 );
+$col_html = ob_get_clean();
+test_assert( str_contains( $col_html, 'dpls-badge' ), 'M10.4: Schema status badge rendered in custom column' );
+
+// 10.5 SEO Conflict Detector
+$seo_detector = new \DPLS\SchemaAI\Integrations\SeoConflictDetector( $settings );
+test_assert( false === $seo_detector->is_suppression_enabled(), 'M10.5: Third-party SEO schema suppression is disabled by default' );
+
+// Simulate Rank Math active
+if ( ! defined( 'RANK_MATH_VERSION' ) ) {
+	define( 'RANK_MATH_VERSION', '1.0.220' );
+}
+$detected_seo = $seo_detector->get_detected_plugins();
+test_assert( isset( $detected_seo['rank_math'] ), 'M10.5: Active Rank Math plugin detected by conflict detector' );
+
+// 10.6 Suppression activation
+$settings->set( 'suppress_third_party_seo_schema', true );
+test_assert( true === $seo_detector->is_suppression_enabled(), 'M10.6: Suppression toggle successfully enables third-party schema suppression' );
 
 echo PHP_EOL . "=================================================" . PHP_EOL;
 echo sprintf( "Results: %d/%d tests passed. (%d failed)", $passed_count, $test_count, count( $failed_tests ) ) . PHP_EOL;

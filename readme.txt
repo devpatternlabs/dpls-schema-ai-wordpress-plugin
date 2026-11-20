@@ -4,7 +4,7 @@ Tags: schema, structured data, json-ld, seo, rich snippets
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -102,6 +102,13 @@ By default, NO. DPLS Schema AI adheres to a strict non-destructive uninstall pol
 8. **Data Management & Backup Portability**: Settings and schema records export/import with pre-import validation preview and overwrite protection.
 
 == Changelog ==
+
+= 2.1.0 =
+* Feature: Direct 1-click "Google Rich Results Test" button in post editor and schema generator.
+* Feature: Core WordPress Post/Page List Table bulk actions ("Generate Schema (DPLS AI)" and "Apply Schema Proposals").
+* Feature: Added custom "Schema (DPLS)" status badges column in WordPress post inventory.
+* Feature: SEO Plugin Conflict Detector (Yoast SEO, Rank Math, AIOSEO, SEOPress) with administrative warning banners and one-click duplicate schema suppression.
+* Enhancement: Added 1-click "Copy JSON-LD" button for seamless testing in Google's Code Snippet tool.
 
 = 2.0.0 =
 * Major release introducing modular AI provider architecture with local Ollama support.

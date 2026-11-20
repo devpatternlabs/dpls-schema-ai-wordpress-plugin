@@ -3,7 +3,7 @@
  * Plugin Name: DPLS Schema AI
  * Plugin URI: https://devpatternlabs.com/plugins/dpls-schema-ai
  * Description: Automatically analyzes WordPress page and post content, recommends structured data, generates Schema.org JSON-LD, and maintains it when content changes.
- * Version: 2.0.0
+ * Version: 2.1.0
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Dev Pattern Labs
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define plugin constants safely.
 if ( ! defined( 'DPLS_SCHEMA_AI_VERSION' ) ) {
-	define( 'DPLS_SCHEMA_AI_VERSION', '2.0.0' );
+	define( 'DPLS_SCHEMA_AI_VERSION', '2.1.0' );
 }
 
 if ( ! defined( 'DPLS_SCHEMA_AI_FILE' ) ) {

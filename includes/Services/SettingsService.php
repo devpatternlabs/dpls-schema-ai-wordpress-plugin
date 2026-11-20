@@ -39,6 +39,7 @@ class SettingsService implements ServiceInterface {
 		'output_minify_json'           => false,
 		'woocommerce_enabled'          => true,
 		'suppress_wc_core_schema'      => false,
+		'suppress_third_party_seo_schema' => false,
 		'elementor_enabled'            => true,
 		'history_retention_days'       => 30,
 		'history_max_versions'         => 10,
@@ -124,6 +125,19 @@ class SettingsService implements ServiceInterface {
 	}
 
 	/**
+	 * Set a single setting by key.
+	 *
+	 * @param string $key Setting key.
+	 * @param mixed  $value Setting value.
+	 * @return bool
+	 */
+	public function set( string $key, $value ): bool {
+		$all = $this->get_all();
+		$all[ $key ] = $value;
+		return $this->update( $all );
+	}
+
+	/**
 	 * Retrieve verified organization data.
 	 *
 	 * @return array
@@ -204,6 +218,7 @@ class SettingsService implements ServiceInterface {
 		$output['output_minify_json']         = ! empty( $input['output_minify_json'] );
 		$output['woocommerce_enabled']        = ! empty( $input['woocommerce_enabled'] );
 		$output['suppress_wc_core_schema']    = ! empty( $input['suppress_wc_core_schema'] );
+		$output['suppress_third_party_seo_schema'] = ! empty( $input['suppress_third_party_seo_schema'] );
 		$output['elementor_enabled']          = ! empty( $input['elementor_enabled'] );
 		$output['ollama_enabled']             = ! empty( $input['ollama_enabled'] );
 		$output['ai_consent']                 = ! empty( $input['ai_consent'] );

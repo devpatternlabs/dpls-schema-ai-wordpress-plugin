@@ -106,7 +106,7 @@ $dpls_recent_posts  = get_posts(
 
 			<textarea id="dpls-generator-output" class="dpls-code-editor" rows="18" placeholder="<?php esc_attr_e( 'Select content and click Generate to produce JSON-LD structured data...', 'dpls-schema-ai' ); ?>"></textarea>
 
-			<div class="dpls-generator-footer" style="margin-top:15px; display:flex; gap:10px;">
+			<div class="dpls-generator-footer" style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
 				<button type="button" id="dpls-generator-apply-btn" class="button button-primary button-large" disabled>
 					<span class="dashicons dashicons-saved" aria-hidden="true"></span>
 					<?php esc_html_e( 'Apply Schema to Selected Content', 'dpls-schema-ai' ); ?>
@@ -115,6 +115,10 @@ $dpls_recent_posts  = get_posts(
 					<span class="dashicons dashicons-yes" aria-hidden="true"></span>
 					<?php esc_html_e( 'Validate Markup', 'dpls-schema-ai' ); ?>
 				</button>
+				<a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener noreferrer" id="dpls-btn-google-rich-test" class="button button-secondary button-large" style="display:inline-flex; align-items:center; gap:4px; border-color:#4285f4; color:#1a73e8;" title="<?php esc_attr_e( 'Test generated structured data in Google Rich Results Test', 'dpls-schema-ai' ); ?>">
+					<span class="dashicons dashicons-external" style="font-size:16px; width:16px; height:16px;"></span>
+					<?php esc_html_e( 'Test with Google', 'dpls-schema-ai' ); ?>
+				</a>
 			</div>
 		</div>
 	</div>

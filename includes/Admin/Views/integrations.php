@@ -215,6 +215,52 @@ $dpls_ai_consent      = (bool) $settings->get( 'ai_consent', false );
 					</table>
 				</div>
 
+				<!-- 4. SEO Plugin Conflict & Duplicate Prevention -->
+				<?php
+				$dpls_seo_detector = new \DPLS\SchemaAI\Integrations\SeoConflictDetector( $settings );
+				$dpls_detected_seo = $dpls_seo_detector->get_detected_plugins();
+				$dpls_suppress_seo = (bool) $settings->get( 'suppress_third_party_seo_schema', false );
+				?>
+				<div class="dpls-card" style="margin-bottom:20px; border-left:4px solid #f59e0b;">
+					<div style="display:flex; justify-content:space-between; align-items:center;">
+						<h2 style="margin:0;">
+							<span class="dashicons dashicons-shield" style="color:#f59e0b;"></span>
+							<?php esc_html_e( 'SEO Plugin Conflict & Duplicate Prevention', 'dpls-schema-ai' ); ?>
+						</h2>
+						<?php if ( ! empty( $dpls_detected_seo ) ) : ?>
+							<span class="dpls-badge" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;">
+								<?php
+								$dpls_detected_names = wp_list_pluck( $dpls_detected_seo, 'name' );
+								echo esc_html( implode( ', ', $dpls_detected_names ) );
+								?>
+							</span>
+						<?php else : ?>
+							<span class="dpls-badge dpls-badge-applied">
+								<?php esc_html_e( 'No Conflicting Plugins', 'dpls-schema-ai' ); ?>
+							</span>
+						<?php endif; ?>
+					</div>
+
+					<p class="description" style="margin-top:10px;">
+						<?php esc_html_e( 'Prevent duplicate Schema markup when general SEO plugins (like Yoast SEO, Rank Math, or AIOSEO) are also generating structured data on your posts.', 'dpls-schema-ai' ); ?>
+					</p>
+
+					<table class="form-table" role="presentation">
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Suppress Third-Party Schema:', 'dpls-schema-ai' ); ?></th>
+							<td>
+								<label>
+									<input type="checkbox" name="dpls_settings[suppress_third_party_seo_schema]" value="1" <?php checked( $dpls_suppress_seo ); ?> />
+									<strong><?php esc_html_e( 'Auto-suppress third-party SEO plugin Schema output', 'dpls-schema-ai' ); ?></strong>
+								</label>
+								<p class="description">
+									<?php esc_html_e( 'When enabled, DPLS Schema AI safely hooks into Yoast, Rank Math, and AIOSEO to suppress their basic schema tags while retaining their meta titles, descriptions, and sitemaps.', 'dpls-schema-ai' ); ?>
+								</p>
+							</td>
+						</tr>
+					</table>
+				</div>
+
 				<p class="submit">
 					<input type="submit" name="dpls_settings_submit" class="button button-primary button-large" value="<?php esc_attr_e( 'Save Integration Settings', 'dpls-schema-ai' ); ?>" />
 				</p>

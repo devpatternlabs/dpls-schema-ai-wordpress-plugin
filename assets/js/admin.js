@@ -878,6 +878,56 @@
 			e.preventDefault();
 			$('#dpls-import-preview-box').fadeOut(150);
 		});
+
+		// 1-Click Copy JSON-LD in Editor Meta Box
+		$(document).on('click', '.dpls-btn-copy-jsonld', function(e) {
+			e.preventDefault();
+			var $textarea = $(this).closest('.dpls-metabox-container').find('#dpls-mb-schema-code');
+			if ($textarea.length && $textarea.val().trim()) {
+				navigator.clipboard.writeText($textarea.val().trim()).then(function() {
+					DplsAdmin.showNotice('JSON-LD copied to clipboard! Paste directly into Google Rich Results Test (Code mode).', 'success');
+				});
+			} else {
+				DplsAdmin.showNotice('No JSON-LD markup found to copy. Generate a proposal first.', 'warning');
+			}
+		});
+
+		// SEO Conflict Notice: Dismiss Notice
+		$(document).on('click', '.dpls-btn-dismiss-conflict', function(e) {
+			e.preventDefault();
+			var $btn = $(this);
+			var $notice = $btn.closest('.dpls-seo-conflict-notice');
+			var nonce = $btn.data('nonce');
+			$.post(dplsSchemaAi.ajaxUrl, {
+				action: 'dpls_dismiss_seo_conflict',
+				nonce: nonce
+			}, function() {
+				$notice.slideUp(180);
+			});
+		});
+
+		// SEO Conflict Notice: Auto-Suppress Third-Party Schema
+		$(document).on('click', '.dpls-btn-enable-seo-suppression', function(e) {
+			e.preventDefault();
+			var $btn = $(this);
+			var $notice = $btn.closest('.dpls-seo-conflict-notice');
+			var nonce = $btn.data('nonce');
+			$btn.prop('disabled', true).text('Activating...');
+			$.post(dplsSchemaAi.ajaxUrl, {
+				action: 'dpls_toggle_seo_suppression',
+				nonce: nonce
+			}, function(res) {
+				if (res.success) {
+					DplsAdmin.showNotice(res.data.message, 'success');
+					setTimeout(function() {
+						window.location.reload();
+					}, 800);
+				} else {
+					$btn.prop('disabled', false).text('Auto-Suppress Third-Party Schema (Recommended)');
+					DplsAdmin.showNotice(res.data ? res.data.message : dplsSchemaAi.i18n.error, 'error');
+				}
+			});
+		});
 	});
 
 })(jQuery);
