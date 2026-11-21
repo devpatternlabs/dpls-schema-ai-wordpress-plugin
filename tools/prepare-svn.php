@@ -15,7 +15,13 @@ defined( 'ABSPATH' ) || ( 'cli' === php_sapi_name() ) || exit;
 
 $root_dir   = dirname( __DIR__ );
 $svn_dir    = isset( $argv[1] ) ? rtrim( $argv[1], '\\/' ) : $root_dir . '/dist/svn';
-$version    = '2.0.0';
+
+if ( ! defined( 'ABSPATH' ) ) {
+	define( 'ABSPATH', true );
+}
+
+require_once $root_dir . '/includes/Common/Constants.php';
+$version = \DPLS\SchemaAI\Common\Constants::VERSION;
 
 echo "========================================\n";
 echo " DPLS Schema AI - SVN Release Staging   \n";
@@ -57,6 +63,10 @@ $excluded_files = array(
 	'README.md',
 	'package-release.php',
 	'package-release.ps1',
+	'screenshot-1.png',
+	'screenshot-2.png',
+	'screenshot-3.png',
+	'screenshot-4.png',
 );
 
 function copy_recursive( $src, $dst, $excluded_dirs, $excluded_files ) {

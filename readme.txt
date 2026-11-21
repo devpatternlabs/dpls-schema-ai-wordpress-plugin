@@ -90,6 +90,23 @@ Yes. When a page is designed using Elementor, WordPress `post_content` is often 
 = Will uninstalling the plugin delete my existing schema data? =
 By default, NO. DPLS Schema AI adheres to a strict non-destructive uninstall policy (`preserve_data = true`). If you deactivate or delete the plugin, your schema metadata and history logs remain preserved. To permanently purge all plugin data upon uninstallation, administrators can enable the explicit deletion option under Settings.
 
+= How can I test my structured data directly with Google? =
+Every post editor meta box and the Schema Generator view feature a direct 1-click "Google Rich Results Test" button. Clicking it opens the official Google testing tool with your post's live permalink pre-filled. If testing a draft or custom markup, use the "Copy JSON-LD" button and paste it directly into Google's Code Snippet mode.
+
+= Can I generate or activate Schema in bulk across all my posts? =
+Yes. In your WordPress admin under Posts &rarr; All Posts or Pages &rarr; All Pages, select multiple items, open the Bulk Actions dropdown, and choose "Generate Schema (DPLS AI)" to automatically analyze and draft proposals in batch. You can also select "Apply Schema Proposals" to activate them in bulk.
+
+= What happens if I also use Yoast SEO, Rank Math, or AIOSEO? =
+DPLS Schema AI includes an automatic SEO Conflict Detector. It detects active SEO plugins and alerts you if competing Schema output is present. You can enable the 1-click "Auto-Suppress Third-Party Schema" toggle under Integrations to prevent duplicate entity warnings in Google Search Console, while keeping all your SEO meta titles, descriptions, and sitemaps from Yoast or Rank Math completely intact.
+
+== Support & Documentation ==
+
+= Getting Help & Developer Support =
+* **Community Support Forum**: [Official WordPress.org Support Forum](https://wordpress.org/support/plugin/dpls-schema-ai/)
+* **Developer**: Dev Pattern Labs
+* **Official Website & Docs**: [https://devpatternlabs.com](https://devpatternlabs.com)
+* **GitHub Repository**: [https://github.com/devpatternlabs/dpls-schema-ai-wordpress-plugin](https://github.com/devpatternlabs/dpls-schema-ai-wordpress-plugin)
+
 == Screenshots ==
 
 1. **Overview Dashboard**: Real-time structured data coverage, awaiting review queue, validation warnings, and content breakdown.

@@ -196,8 +196,18 @@ class PostListActions {
 				<p>
 					<strong><?php esc_html_e( 'DPLS Schema AI:', 'dpls-schema-ai' ); ?></strong>
 					<?php
-					/* translators: %d: Number of posts processed */
-					printf( esc_html( _n( 'Successfully analyzed content and generated Schema proposal for %d post.', 'Successfully analyzed content and generated Schema proposals for %d posts.', $count, 'dpls-schema-ai' ) ), $count );
+					echo esc_html(
+						sprintf(
+							/* translators: %s: Number of posts processed */
+							_n(
+								'Successfully analyzed content and generated Schema proposal for %s post.',
+								'Successfully analyzed content and generated Schema proposals for %s posts.',
+								$count,
+								'dpls-schema-ai'
+							),
+							number_format_i18n( $count )
+						)
+					);
 					?>
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=dpls-schema-ai-pages-posts' ) ); ?>">
 						<?php esc_html_e( 'Review all proposals in DPLS Hub &rarr;', 'dpls-schema-ai' ); ?>
@@ -214,8 +224,18 @@ class PostListActions {
 				<p>
 					<strong><?php esc_html_e( 'DPLS Schema AI:', 'dpls-schema-ai' ); ?></strong>
 					<?php
-					/* translators: %d: Number of schemas applied */
-					printf( esc_html( _n( 'Successfully applied and activated Schema for %d post.', 'Successfully applied and activated Schema for %d posts.', $count, 'dpls-schema-ai' ) ), $count );
+					echo esc_html(
+						sprintf(
+							/* translators: %s: Number of schemas applied */
+							_n(
+								'Successfully applied and activated Schema for %s post.',
+								'Successfully applied and activated Schema for %s posts.',
+								$count,
+								'dpls-schema-ai'
+							),
+							number_format_i18n( $count )
+						)
+					);
 					?>
 				</p>
 			</div>

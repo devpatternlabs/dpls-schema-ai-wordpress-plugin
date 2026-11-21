@@ -209,6 +209,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 					</a>
 				</li>
 			</ul>
+
+			<div class="dpls-support-box" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f1;">
+				<h3 style="font-size: 14px; margin-top: 0; margin-bottom: 8px;">
+					<span class="dashicons dashicons-sos" aria-hidden="true" style="color: #2271b1; vertical-align: middle;"></span>
+					<?php esc_html_e( 'Developer & Community Support', 'dpls-schema-ai' ); ?>
+				</h3>
+				<p style="font-size: 13px; color: #646970; margin-bottom: 12px;">
+					<?php esc_html_e( 'Need help, feature requests, or have schema questions? Dev Pattern Labs and community are here to help.', 'dpls-schema-ai' ); ?>
+				</p>
+				<ul style="margin: 0; padding-left: 0; list-style: none; font-size: 13px; line-height: 2;">
+					<li>
+						<a href="https://wordpress.org/support/plugin/dpls-schema-ai/" target="_blank" rel="noopener noreferrer" style="text-decoration: none; font-weight: 500;">
+							<span class="dashicons dashicons-wordpress" aria-hidden="true" style="font-size: 16px; vertical-align: text-bottom;"></span>
+							<?php esc_html_e( 'Official WordPress Forum', 'dpls-schema-ai' ); ?> &rarr;
+						</a>
+					</li>
+					<li>
+						<a href="https://devpatternlabs.com" target="_blank" rel="noopener noreferrer" style="text-decoration: none; font-weight: 500;">
+							<span class="dashicons dashicons-admin-site-alt3" aria-hidden="true" style="font-size: 16px; vertical-align: text-bottom;"></span>
+							<?php esc_html_e( 'Dev Pattern Labs Website', 'dpls-schema-ai' ); ?> &rarr;
+						</a>
+					</li>
+					<li>
+						<a href="https://github.com/devpatternlabs/dpls-schema-ai-wordpress-plugin" target="_blank" rel="noopener noreferrer" style="text-decoration: none; font-weight: 500;">
+							<span class="dashicons dashicons-external" aria-hidden="true" style="font-size: 16px; vertical-align: text-bottom;"></span>
+							<?php esc_html_e( 'GitHub Source & Issues', 'dpls-schema-ai' ); ?> &rarr;
+						</a>
+					</li>
+				</ul>
+			</div>
 		</div>
 	</div>
 </div>
